@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7А сынып - Химия журналы</title>
+    <title>7А сынып - Ортақ Журнал</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --neon-green: #00ffcc;
             --gold: #ffd700;
-            --overlay: rgba(15, 23, 42, 0.85);
+            --overlay: rgba(15, 23, 42, 0.9);
         }
 
         body {
@@ -20,46 +24,26 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            min-height: 100vh;
             margin: 0;
         }
 
         .lab-container {
             background: var(--overlay);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
             border: 2px solid var(--neon-green);
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
-            padding: 30px;
+            padding: 25px;
             border-radius: 20px;
             width: 95%;
             max-width: 900px;
-            margin-top: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
         }
 
-        h1 {
-            text-align: center;
-            color: var(--neon-green);
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-        }
+        h1 { text-align: center; color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); }
+        .status { text-align: center; font-size: 12px; color: var(--gold); margin-bottom: 15px; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th {
-            color: var(--neon-green);
-            border-bottom: 2px solid var(--neon-green);
-            padding: 12px;
-            text-align: left;
-            background: rgba(0, 255, 204, 0.1);
-        }
-
-        td {
-            padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        table { width: 100%; border-collapse: collapse; }
+        th { color: var(--neon-green); border-bottom: 2px solid var(--neon-green); padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 
         input {
             background: rgba(255, 255, 255, 0.1);
@@ -70,58 +54,17 @@
             outline: none;
         }
 
-        .score-input {
-            width: 50px;
-            text-align: center;
-            font-weight: bold;
-            color: var(--gold);
-        }
-
-        .summary-box {
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-around;
-            border: 1px solid var(--neon-green);
-            margin-bottom: 20px;
-        }
-
-        .qr-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(0, 255, 204, 0.3);
-        }
-
-        .qr-wrapper {
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
-            line-height: 0;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-        }
-
-        /* QR код суретінің стилі */
-        .qr-img {
-            width: 150px;
-            height: 150px;
-        }
-
-        .stat-val {
-            display: block;
-            font-size: 24px;
-            color: var(--gold);
-            font-weight: bold;
-        }
+        .score-input { width: 50px; text-align: center; font-weight: bold; color: var(--gold); }
+        
+        .qr-section { text-align: center; margin-top: 30px; border-top: 1px solid rgba(0, 255, 204, 0.3); padding-top: 20px; }
+        .qr-wrapper { background: white; padding: 10px; display: inline-block; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div class="lab-container">
-        <h1>🧪 7А сынып: Химиялық журнал</h1>
+        <h1>🧪 7А Ортақ Журналы</h1>
+        <div class="status" id="dbStatus">Базаға қосылуда...</div>
 
         <table>
             <thead>
@@ -129,27 +72,36 @@
                     <th>№</th>
                     <th>Оқушы есімі</th>
                     <th>Баға (0-10)</th>
-                    <th>Реакция сипаты</th>
+                    <th>Түсініктеме</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
 
-        <div class="summary-box">
-            <div style="text-align:center"><span class="stat-val" id="totalCount">0</span>Саны</div>
-            <div style="text-align:center"><span class="stat-val" id="totalPoints">0</span>Жалпы</div>
-            <div style="text-align:center"><span class="stat-val" id="avgPoints">0</span>Орташа</div>
-        </div>
-
         <div class="qr-section">
-            <p style="color: var(--neon-green); font-size: 14px;">Сайтқа тез кіру үшін осы QR-кодты қолданыңыз:</p>
+            <p style="font-size: 14px; color: var(--neon-green);">Сайтқа кіру үшін QR-код:</p>
             <div class="qr-wrapper">
-                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJQAAACUCAYAAAB1PADUAAAACXBIWXMAAAsTAAALEwEAmpwYAAADJ0lEQVR4nO2dS3LDIBAFpW69yS6z8yb7X3Wz8S69SbvY2I9VIsIIGp6C96qM6HogCQHIdXm9Xl9wK6/f7xfYid8GfC5UoUKVClWoUqUKVapUoUqVKlSpUoUqVapQpUoVqlSpQpUqVahSpQpVqlShSpUqVKhSpUoVqlSpQpUqVahSpQpVqlShSpUqVKlSpS978Of/XpD7K+u69Wf8uT9+X9B3469v8X8t+GvA50IVKlSpUIUqVapQpUoVqlSpQpUqVahSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVahSpQpVqlShSpUqVKlSpUoVqlSpQpUqVahSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpUpVqlShSpUqVKhSpQpVqlShSpUqVKlSpf8A+Cun3z/H9lUAAAAASUVORK5CYII=" class="qr-img" alt="QR Code">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJQAAACUCAYAAAB1PADUAAAACXBIWXMAAAsTAAALEwEAmpwYAAADJ0lEQVR4nO2dS3LDIBAFpW69yS6z8yb7X3Wz8S69SbvY2I9VIsIIGp6C96qM6HogCQHIdXm9Xl9wK6/f7xfYid8GfC5UoUKVClWoUqUKVapUoUqVKlSpUoUqVapQpUoVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpQpVqlShSpUqVKhSpUpVqlShSpUqVKhSpQpVqlShSpUqVKlSpf8A+Cun3z/H9lUAAAAASUVORK5CYII=" width="130">
             </div>
         </div>
     </div>
 
     <script>
+        // Сіздің Firebase конфигурацияңыз
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvv3kBDf-1NtM1qBN2AII9t-YC-B7eDtA",
+            authDomain: "ximia-5426c.firebaseapp.com",
+            projectId: "ximia-5426c",
+            storageBucket: "ximia-5426c.firebasestorage.app",
+            messagingSenderId: "985995956819",
+            appId: "1:985995956819:web:7e68c7335c354177042ca6",
+            databaseURL: "https://ximia-5426c-default-rtdb.firebaseio.com" // Бұл маңызды!
+        };
+
+        // Firebase-ті іске қосу
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const students = [
             "Абдіғали Нұрамир", "Абралимова Аяулым", "Абуталип Қорылқа", 
             "Алауатттдин Нұрай", "Алтынбаев Дархан", "Аманқызы Аружан", 
@@ -158,56 +110,49 @@
             "Мирзаев Азиз", "Орналиева Асел", "Хожалепес Ақниет"
         ];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedData = localStorage.getItem('chem7A_final');
+        function createTable() {
             const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            students.forEach((name, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${name}</strong></td>
+                    <td><input type="number" class="score-input" id="s-${index}" min="0" max="10" onchange="sendData(${index}, '${name}')"></td>
+                    <td><input type="text" id="c-${index}" onchange="sendData(${index}, '${name}')" style="width: 90%" placeholder="..."></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
 
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                data.forEach((item, index) => createRow(item.name, index + 1, item.score, item.comment));
-            } else {
-                students.forEach((name, index) => createRow(name, index + 1));
+        // Мәліметті базаға жіберу
+        window.sendData = function(id, name) {
+            const score = document.getElementById(`s-${id}`).value;
+            const comment = document.getElementById(`c-${id}`).value;
+            db.ref('grades/' + id).set({
+                name: name,
+                score: score,
+                comment: comment
+            });
+        };
+
+        // Мәліметті базадан нақты уақытта алу
+        db.ref('grades').on('value', (snapshot) => {
+            const data = snapshot.val();
+            document.getElementById('dbStatus').innerText = "🟢 Жүйе онлайн: Деректер жаңартылды";
+            if (data) {
+                Object.keys(data).forEach(id => {
+                    const sInput = document.getElementById(`s-${id}`);
+                    const cInput = document.getElementById(`c-${id}`);
+                    if (sInput) sInput.value = data[id].score;
+                    if (cInput) cInput.value = data[id].comment;
+                });
             }
-            updateStats();
+        }, (error) => {
+            document.getElementById('dbStatus').innerText = "🔴 Қате: Firebase ережелерін (Rules) тексеріңіз";
         });
 
-        function createRow(name, index, score = 0, comment = "") {
-            const tbody = document.getElementById('tableBody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index}</td>
-                <td><strong>${name}</strong></td>
-                <td><input type="number" class="score-input" value="${score}" oninput="saveAndStats()" min="0" max="10"></td>
-                <td><input type="text" value="${comment}" oninput="saveAndStats()" placeholder="Сипаттама..." style="width: 90%;"></td>
-            `;
-            tbody.appendChild(row);
-        }
-
-        function saveAndStats() {
-            const rows = document.querySelectorAll('#tableBody tr');
-            const data = [];
-            let total = 0;
-            
-            rows.forEach(row => {
-                let score = parseFloat(row.cells[2].querySelector('input').value) || 0;
-                if (score > 10) score = 10;
-                total += score;
-                data.push({
-                    name: row.cells[1].innerText,
-                    score: score,
-                    comment: row.cells[3].querySelector('input').value
-                });
-            });
-
-            localStorage.setItem('chem7A_final', JSON.stringify(data));
-            document.getElementById('totalCount').innerText = rows.length;
-            document.getElementById('totalPoints').innerText = total.toFixed(0);
-            document.getElementById('avgPoints').innerText = (total / rows.length).toFixed(1);
-        }
-
-        function updateStats() {
-            saveAndStats();
-        }
+        createTable();
     </script>
 </body>
 </html>
