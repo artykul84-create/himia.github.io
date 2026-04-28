@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7А сынып - Химия журналы</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --neon-green: #00ffcc;
@@ -88,20 +87,20 @@
             margin-bottom: 20px;
         }
 
-        /* QR-код бөлімі */
         .qr-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             padding-top: 20px;
             border-top: 1px solid rgba(0, 255, 204, 0.3);
         }
 
-        #qrcode {
+        .qr-wrapper {
             background: white;
             padding: 10px;
             border-radius: 10px;
+            line-height: 0;
         }
 
         .stat-val {
@@ -137,7 +136,11 @@
 
         <div class="qr-section">
             <p style="color: var(--neon-green); font-size: 14px;">Осы журналға жылдам кіру үшін QR-код:</p>
-            <div id="qrcode"></div>
+            <div class="qr-wrapper">
+                <a href="http://qrcoder.ru" target="_blank">
+                    <img src="http://qrcoder.ru/code/?https%3A%2F%2Fhimia-github-io.vercel.app%2F&4&0" width="148" height="148" border="0" title="QR код">
+                </a>
+            </div>
         </div>
     </div>
 
@@ -161,7 +164,6 @@
                 students.forEach((name, index) => createRow(name, index + 1));
             }
             updateStats();
-            generateQR();
         });
 
         function createRow(name, index, score = 0, comment = "") {
@@ -200,19 +202,6 @@
 
         function updateStats() {
             saveAndStats();
-        }
-
-        // QR код генерациясы
-        function generateQR() {
-            const currentUrl = window.location.href; // Қазіргі сайттың сілтемесін алады
-            new QRCode(document.getElementById("qrcode"), {
-                text: currentUrl,
-                width: 128,
-                height: 128,
-                colorDark : "#0f172a",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
         }
     </script>
 </body>
